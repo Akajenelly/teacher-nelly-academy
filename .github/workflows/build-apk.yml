@@ -31,12 +31,8 @@ jobs:
 
       - name: Build APK
         run: |
-          # Find the directory containing gradlew anywhere inside extracted/
-          GRADLEW_PATH=$(find extracted -name "gradlew" -type f | head -n 1)
-          
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "ERROR: Could not find gradlew in any extracted folder!"
-            exit 1
+        
+        
           fi
           
           PROJECT_DIR=$(dirname "$GRADLEW_PATH")
