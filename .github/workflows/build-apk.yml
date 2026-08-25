@@ -13,8 +13,11 @@ jobs:
 
       - name: Extract Android project
         run: |
+          mkdir -p extracted
           for zip in *.zip; do
-            [ -f "$zip" ] && unzip -o "$zip" -d extracted
+            if [ -f "$zip" ]; then
+              unzip -o "$zip" -d extracted
+            fi
           done
 
       - name: Set up Java
@@ -28,12 +31,17 @@ jobs:
 
       - name: Build APK
         run: |
-          GRADLEW_PATH=$(find extracted -name gradlew -type f | head -n 1)
+          # Find the directory containing gradlew anywhere inside extracted/
+          GRADLEW_PATH=$(find extracted -name "gradlew" -type f | head -n 1)
+          
           if [ -z "$GRADLEW_PATH" ]; then
-            echo "ERROR: Could not find gradlew anywhere in the extracted directory!"
+            echo "ERROR: Could not find gradlew in any extracted folder!"
             exit 1
           fi
+          
           PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          echo "Found gradlew in: $PROJECT_DIR"
+          
           cd "$PROJECT_DIR"
           chmod +x gradlew
           ./gradlew assembleDebug
