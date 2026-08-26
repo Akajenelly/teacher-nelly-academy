@@ -1,3 +1,4 @@
+
 name: Build Teacher Nelly Academy APK
 
 on:
@@ -14,21 +15,11 @@ jobs:
       - name: Extract Android project
         run: |
           mkdir -p extracted
-
-          found_zip=false
-
           for zip in *.zip; do
             if [ -f "$zip" ]; then
-              echo "Extracting $zip"
               unzip -o "$zip" -d extracted
-              found_zip=true
             fi
           done
-
-          if [ "$found_zip" = false ]; then
-            echo "No ZIP file found."
-            exit 1
-          fi
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -46,34 +37,22 @@ jobs:
 
       - name: Find Android project
         run: |
-          echo "Searching for Android project..."
-
-          SETTINGS_PATH=$(find extracted -name "settings.gradle" -o -name "settings.gradle.kts" | head -1)
+          SETTINGS_PATH=$(find extracted \( -name "settings.gradle" -o -name "settings.gradle.kts" \) -type f | head -1)
 
           if [ -z "$SETTINGS_PATH" ]; then
             echo "ERROR: No Android Gradle project found."
-            echo "Files inside extracted:"
-            find extracted -maxdepth 4 -type f | head -100
+            find extracted -maxdepth 4 -type f
             exit 1
           fi
 
           PROJECT_DIR=$(dirname "$SETTINGS_PATH")
-
-          echo "Android project found at: $PROJECT_DIR"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Build APK
         run: |
           cd "$PROJECT_DIR"
-
-          echo "Creating Gradle wrapper..."
-
           gradle wrapper --gradle-version 8.7
-
           chmod +x gradlew
-
-          echo "Building APK..."
-
           ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
